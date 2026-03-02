@@ -26,6 +26,12 @@ backend/allure-results/
 .DS_Store
 Thumbs.db
 
+# Database (SQLite) — 避免把本地数据推到 Git
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+
 # Env / secrets
 .env
 .env.local

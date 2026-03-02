@@ -1,7 +1,25 @@
 # TestPilot - 可视化自动化测试平台
 
-一个现代化的 Web 可视化测试平台，支持**接口测试、Web UI 测试、App 测试、小程序测试**，提供用例管理、执行引擎、测试报告、缺陷管理、**即时通讯**（支持图片/截图、群聊 @ 提及、点击头像查看用户资料并发消息、头像显示姓氏）、**AI 答疑**、分享、讨论区与操作日志等完整功能。
- > image 文件夹可删除，该文件夹仅作为文档中图片存储
+## 文档说明
+
+本文档为 TestPilot 的**唯一正式说明**，依据当前代码库编写，力求**严谨、全面、详细**。阅读时请以本章节及目录为准，避免与其它零散说明混淆。若文档与实际行为不一致，以实际代码与运行结果为准，并欢迎反馈以更新文档。
+
+---
+
+## 项目概述
+
+TestPilot 是一套**前后端分离**的 Web 可视化测试平台，支持以下四类测试的用例编写与在平台内执行：
+
+| 类型 | 说明 | 前置条件 |
+|------|------|----------|
+| **接口测试** | HTTP/HTTPS 请求与断言 | 仅需本平台环境，无额外依赖 |
+| **Web UI 测试** | 浏览器自动化（打开页面、点击、输入、断言等） | 本机安装 Chrome 或 Edge；可选安装 Web 引擎依赖 |
+| **App 测试** | 移动端自动化 | 需本机启动 Appium Server 并连接真机/模拟器 |
+| **小程序测试** | 小程序自动化 | 依赖项目内执行器与对应运行时环境，具体以代码实现为准 |
+
+除测试能力外，平台还提供：**用例管理**（含分组、筛选、AI 生成用例）、**执行记录与日志**、**测试报告**（含 Allure）、**缺陷管理**（含 Jira 集成）、**环境配置**、**项目管理与权限**、**用户管理**、**即时通讯**（私聊/群聊、图片与 @ 提及、分享）、**AI 答疑**与**系统设置**（Jira、邮件、AI 模型）等。功能边界以本文档「功能模块说明」及实际菜单为准。
+
+> **关于图片**：仓库中 `image` 文件夹仅用于存放文档内引用的截图，可删除而不影响运行。
 
 ![首页](image/one.jpg)
 
@@ -9,24 +27,24 @@
 
 ## 三步跑起来
 
-如果你**从没部署过项目**，按下面三步做即可在电脑上打开 TestPilot：
+若**从未部署过本项目**，按下面三步即可在本地打开 TestPilot：
 
-| 步骤 | 你要做的事 | 说明 |
-|------|------------|------|
-| **① 装环境** | 安装 Python 和 Node.js | 见下方 [环境准备](#环境准备)，约 5 分钟 |
-| **② 装依赖** | 在项目里执行两条命令 | 后端装一次、前端装一次，见 [快速开始](#快速开始) |
-| **③ 启动** | 双击 `一键启动.bat` 或手动开两个窗口 | 启动后浏览器打开 http://localhost:3000 |
+| 步骤 | 操作 | 参考 |
+|------|------|------|
+| **① 装环境** | 安装 Python 3.11+ 与 Node.js 18+（LTS） | [环境准备](#环境准备) |
+| **② 装依赖** | 在 `backend` 与 `frontend` 分别安装依赖 | [快速开始](#快速开始) |
+| **③ 启动** | 双击根目录 `一键启动.bat`（Windows）或手动启动后端与前端 | 同上 |
 
-**第一次打开页面**：用默认账号 **admin**，密码 **admin123** 登录，然后到左侧「项目管理」里新建一个项目，就可以开始添加用例了。更细的操作见 [如何使用](#如何使用)。
+启动后在浏览器访问 **http://localhost:3000**（勿直接访问 8001）。首次登录使用默认账号 **admin**，密码 **admin123**，登录后请尽快在「个人资料」或「修改密码」中修改密码。接着在「项目管理」中新建项目，即可开始添加用例。详细操作见 [如何使用](#如何使用)。
 
 ---
 
 ## 目录
 
-- [环境准备](#环境准备)（必读：安装 Python 与 Node.js）
-- [快速开始](#快速开始)（安装依赖 + 启动）
-- [如何使用](#如何使用)（登录后怎么用）
-- [部署指南](#部署指南)（本机 / **Linux 服务器详细** / 局域网）
+- [环境准备](#环境准备)
+- [快速开始](#快速开始)
+- [如何使用](#如何使用)
+- [部署指南](#部署指南)
 - [功能模块说明](#功能模块说明)
 - [即时通讯与 AI 答疑](#即时通讯与-ai-答疑)
 - [AI 功能说明](#ai-功能说明)
@@ -34,24 +52,22 @@
 - [后端脚本说明](#后端脚本说明)
 - [常见问题](#常见问题)
 - [扩展指南](#扩展指南)
-- [CI 流水线](#ci-流水线)
+- [CI/CD 流水线](#cicd-流水线)
 - [技术栈](#技术栈供参考)
 - [设计参考](#设计参考)
 - [开源与推送到 GitHub](#开源与推送到-github)
 
 ---
 
-## 开源与推送到 GitHub
+## 开源
 
-本项目采用 **MIT 协议**开源，详见根目录 [LICENSE](LICENSE)。
-
-若你想将本项目推送到自己的 GitHub 仓库并公开，请按 **[GITHUB_PUBLISH.md](GITHUB_PUBLISH.md)** 中的步骤操作，包括：安装 Git、在 GitHub 创建仓库、本地初始化并推送、配置认证（HTTPS Token 或 SSH）等。
+本项目采用 **MIT 协议** 开源，详见根目录 [LICENSE](LICENSE)。
 
 ---
 
 ## 环境准备
 
-在运行 TestPilot 之前，电脑上需要安装两样东西：**Python** 和 **Node.js**。下面用「小白也能懂」的方式说明怎么装、怎么检查是否装好。
+在运行 TestPilot 之前，本机需要安装 **Python** 和 **Node.js**。以下为推荐版本与检查方法；若后续项目升级依赖，以仓库内 `backend/requirements.txt` 与 `frontend/package.json` 为准。
 
 ### 1. 安装 Python（后端需要）
 
@@ -76,18 +92,18 @@
   ```
   若分别显示版本号（如 `v18.x.x` 和 `9.x.x`）就说明装好了。
 
-### 3. Web / App 测试（按需准备）
+### 3. 其他测试类型（按需准备）
 
-- **只做接口测试**：安装好 Python 和 Node.js 即可，本步可跳过。
-- **要跑 Web 页面自动化**：本机必须安装 **Chrome** 或 **Microsoft Edge**（默认使用 Edge）；首次运行 Web 用例时，后端会自动下载对应驱动。
-- **要跑 App 自动化**：必须额外安装并启动 **Appium Server**，并连接真机或模拟器。
+- **仅使用接口测试**：安装好 Python 与 Node.js 即可，本步可跳过。
+- **Web UI 测试**：本机需安装 **Chrome** 或 **Microsoft Edge**（默认优先使用 Edge）；并执行一次 `backend/安装Web引擎依赖.bat` 安装 Selenium 等；首次运行 Web 用例时后端会尝试自动下载浏览器驱动，若失败可参考 [浏览器驱动路径配置](#浏览器驱动路径配置chrome_driver_path--edge_driver_path) 手动指定驱动路径。
+- **App 测试**：需在本机安装并启动 **Appium Server**，并连接真机或模拟器。
+- **小程序测试**：依赖项目内执行器与对应运行时，以代码实现为准。
 
 ---
 
 ## 快速开始
 
-以下所有命令，都是在「命令行」里执行的。  
-**如何打开命令行**：按 `Win + R`，输入 `cmd` 回车；或在本项目文件夹里按住 Shift 右键，选择「在此处打开 PowerShell 窗口」。
+以下步骤均在**命令行**中执行。打开方式：`Win + R` → 输入 `cmd` 回车；或在项目文件夹内 Shift + 右键 →「在此处打开 PowerShell 窗口」。**注意**：`一键启动.bat` 仅适用于 **Windows**；Linux/macOS 请使用下方「方式二：手动启动」。
 
 ### 第一步：安装后端依赖
 
@@ -149,18 +165,13 @@
 （若打不开，可试试：http://127.0.0.1:3000）
 
 **重要**：  
-- **必须访问**：**http://localhost:3000**（或 http://127.0.0.1:3000）。  
-- **不要**在浏览器里直接打开 http://localhost:8001：那样只能看到 API 文档，无法登录、无法使用仪表盘和用例等功能。所有日常使用都通过 3000 端口进入。
+- **日常使用必须访问** **http://localhost:3000**（或 http://127.0.0.1:3000）。前端在此端口提供登录、仪表盘、用例、执行、报告等完整功能。  
+- **不要**仅访问 http://localhost:8001：该端口为后端 API，直接打开仅能看到接口文档，无法登录或使用平台功能。
 
 ### 第五步：登录与示例数据
 
 - **登录**：使用默认管理员账号 **admin**，密码 **admin123**。登录后请在「个人资料」或「修改密码」里**立即修改默认密码**。
-- **示例数据（可选）**：若希望先看到示例项目和用例，在后端**已启动**的情况下，再开一个命令行窗口，执行：
-  ```bash
-  cd backend
-  python seed.py
-  ```
-  执行成功后，刷新浏览器，即可在「用例管理」「环境配置」等页面看到示例数据。
+- **示例数据（可选）**：若仓库或 `backend` 目录下提供 **seed.py** 脚本，可在后端已启动时，另开命令行在 `backend` 目录执行 `python seed.py` 导入示例项目与用例；**若未提供该脚本**，请手动在「项目管理」「用例管理」「环境配置」中创建项目、用例与环境。
 
 ---
 
@@ -260,13 +271,13 @@
 
 ## 部署指南
 
-根据你的使用场景选一种即可：本机自己用、放到服务器给大家用、或在局域网里给同事用。
+根据使用场景选一种即可：本机自己用、放到服务器给大家用、或在局域网里给同事用。
 
 ---
 
 ### 一、本地部署（本机开发 / 演示 / 个人使用）
 
-**你要做的：**
+**要做的：**
 
 1. 确保已按 [环境准备](#环境准备) 安装好 Python 3.11+ 和 Node.js 18+，并已按 [快速开始](#快速开始) 在项目里装好后端、前端依赖。
 2. 启动方式二选一：
@@ -295,7 +306,7 @@
 
 ---
 
-##### 2.1 你需要准备什么
+##### 2.1 需要准备什么
 
 | 准备项 | 说明 |
 |--------|------|
@@ -785,21 +796,23 @@ docker compose down              # 停止并移除
 
 ## 功能模块说明
 
+以下为平台主要功能与权限说明；**菜单位置与操作以实际界面为准**，若与本文档有出入，以当前版本界面为准。
+
 | 模块 | 说明 |
 |------|------|
 | **仪表盘** | 项目/用例/执行统计、通过率、类型与优先级分布、近 7 日趋势、最近执行列表，支持点击跳转 |
-| **用例管理** | 接口/Web/App/小程序四类用例；支持**分组**（按分组展开/折叠，从分组内进入编辑后返回列表会保持该分组展开）；类型、优先级、日期、关键词筛选，批量删除；每个分组及未分组均有 **「AI 生成用例」**；编辑页可单条执行。Web 步骤动作仅支持系统预定义动作，AI 或历史非标准动作会自动映射为系统动作 |
-| **执行记录** | 历史执行列表，支持状态、所属项目、日期、用例名称关键词筛选；展示**环境**名称；详情含响应/断言/日志及执行环境；失败可 **「AI生成缺陷」**（指派可编辑），可删除 |
-| **测试报告** | 按执行范围生成报告（范围可输入多个执行 ID 逗号分隔，留空则汇总最近 100 条）；通过/失败/错误统计；支持报告名称关键词、所属项目、日期筛选；可选 Allure HTML 报告；支持 **AI 分析报告** |
-| **缺陷管理** | 新建/编辑/删除缺陷，讨论区、操作日志，指派与权限控制（指派可编辑），支持关键词、日期筛选；可从执行记录或日志查看的失败详情 **「AI生成缺陷」** 并带入关联信息；可选 Jira 推送与同步 |
-| **日志查看** | 按执行维度展示请求/响应与断言日志，支持状态、所属项目、关键词、日期筛选，展开、复制、下载；支持 **AI 分析**；失败可 **「AI生成缺陷」**（指派可编辑） |
-| **环境配置** | 按项目配置多环境：Base URL、环境变量（每行 key=value，可填地址等）、公共请求头，用例中 `{{变量名}}` 引用；与基础地址可一致或不同。编辑用例时所选「执行环境」可保存，再次打开会回显。支持日期筛选 |
-| **项目管理** | 多项目，用例/环境/报告归属项目；**权限**：创建人为负责人，仅负责人或管理员可编辑/删除，负责人与成员可查看；支持日期筛选、编辑、删除 |
-| **用户管理** | 管理员可创建用户、分配权限；支持登录账号/姓名/邮箱关键词、日期筛选 |
-| **系统设置** | Jira 集成、SMTP 邮件、**AI 模型**（API Key 与模型配置；用于日志/报告分析、**AI生成缺陷**、**AI 生成用例**、**AI 答疑**） |
-| **即时通讯** | 私聊、群聊；支持**发送图片/截图**（按钮选择或 Ctrl+V 粘贴）；群聊支持 **@ 提及成员**；**点击头像查看用户资料并发消息**；头像显示**姓氏**；消息通知机器人推送系统通知；用例/执行/报告/缺陷/日志等可**分享**至指定会话；**乐观更新**减少发送延迟 |
-| **AI 答疑** | 独立 AI 对话页面，可新建会话、查看历史，与 AI 助手进行测试相关问答；**新回复红点提示**；需在系统设置配置 AI 模型 |
-| **使用与部署** | 系统内「使用与部署」说明页，与本文档对应，含快速启动、推荐流程、各功能说明、部署与常见问题 |
+| **用例管理** | 接口/Web/App/小程序四类用例；分组展示（展开/折叠）；类型、优先级、日期、关键词筛选，批量删除；分组及未分组上方有 **「AI 生成用例」**；编辑页可单条执行。Web 步骤仅支持系统预定义动作，非标准动作会做映射 |
+| **执行记录** | 历史执行列表，按状态、项目、日期、用例名筛选；展示环境名；详情含响应/断言/日志及执行环境；失败可 **「AI生成缺陷」**（可编辑指派等），可删除 |
+| **测试报告** | 按执行范围生成报告（范围可填多个执行 ID 逗号分隔，留空则最近 100 条）；通过/失败/错误统计；报告名、项目、日期筛选；可选 Allure HTML；**AI 分析报告** |
+| **缺陷管理** | 新建/编辑/删除缺陷，讨论区、操作日志，指派与权限（指派可编辑）；可从执行记录或日志失败详情 **「AI生成缺陷」** 带入关联；可选 Jira 推送与同步 |
+| **日志查看** | 按执行展示请求/响应与断言日志，状态、项目、关键词、日期筛选，展开、复制、下载；**AI 分析**；失败可 **「AI生成缺陷」** |
+| **环境配置** | 按项目配置多环境：Base URL、环境变量（每行 key=value）、公共请求头；用例中 `{{变量名}}` 引用。编辑用例时所选执行环境可保存并回显 |
+| **项目管理** | 多项目；创建人为负责人；仅负责人或管理员可编辑/删除项目，负责人与成员可查看并在其下建用例/环境 |
+| **用户管理** | 管理员创建用户、分配权限；支持账号/姓名/邮箱、日期筛选 |
+| **系统设置** | Jira、SMTP 邮件、**AI 模型**（API Key 与模型；用于日志/报告分析、AI生成缺陷、AI 生成用例、AI 答疑） |
+| **即时通讯** | 私聊、群聊；图片/截图（按钮或 Ctrl+V）；群聊 @ 提及；点击头像查看资料并发消息；头像显示姓氏；系统通知；用例/执行/报告/缺陷/日志可分享至会话；乐观更新 |
+| **AI 答疑** | 独立 AI 对话页，新建/历史会话，新回复红点；需在系统设置配置 AI 模型 |
+| **使用与部署** | 系统内说明页，与本文档对应，含快速启动、流程、功能说明、部署与常见问题 |
 
 ---
 
@@ -892,66 +905,106 @@ docker compose down              # 停止并移除
 
 ## 项目结构
 
+以下为当前仓库的主要目录与文件说明，与实际代码一致。
+
 ```
 testtool/
 ├── backend/                      # 后端（默认端口 8001）
 │   ├── app/
-│   │   ├── main.py               # FastAPI 入口、路由注册、健康检查
-│   │   ├── config.py             # 集中配置（环境变量读取）
-│   │   ├── logging_config.py     # 结构化日志配置
-│   │   ├── rate_limiter.py       # 接口限流器
-│   │   ├── audit.py              # 操作审计日志
+│   │   ├── main.py               # FastAPI 入口、路由注册、健康检查、WebSocket
+│   │   ├── config.py             # 集中配置（环境变量）
+│   │   ├── logging_config.py     # 日志配置
+│   │   ├── rate_limiter.py       # 接口限流
+│   │   ├── audit.py              # 操作审计
 │   │   ├── database.py           # 数据库连接与初始化
-│   │   ├── db_utils.py           # 查询辅助（如 LIKE 通配符转义）
-│   │   ├── models.py             # SQLAlchemy 模型（含 AuditLog）
+│   │   ├── db_utils.py           # 查询辅助
+│   │   ├── models.py             # SQLAlchemy 模型
 │   │   ├── schemas.py            # Pydantic 模型
-│   │   ├── routes/               # API 路由
-│   │   └── services/             # 执行器、Allure、Jira 等
+│   │   ├── routes/               # API 路由（auth, projects, cases, execution, reports, defects, logs, settings, users, notifications, ai, ai_chat, chat, groups 等）
+│   │   ├── services/             # 业务逻辑（executor, web_executor, app_executor, miniapp_executor, allure_service, jira_service, ai_service, email_service 等）
+│   │   └── scripts/
+│   │       └── seed_admin.py     # 重置管理员密码为 admin / admin123
 │   ├── requirements.txt
-│   ├── seed.py                   # 示例数据
+│   ├── clear_data.py             # 清除数据库与上传/报告目录并重建默认管理员（使用前需停止后端）
 │   ├── start_backend.bat         # 仅启动后端（8001）
-│   ├── 安装Web引擎依赖.bat        # 可选，Web UI 用例需执行一次
-│   ├── 释放8001端口.bat           # 端口被占用时释放 8001
-│   └── 清除浏览器驱动缓存.bat     # 驱动报错时清除缓存
+│   ├── 安装Web引擎依赖.bat        # 可选，执行 Web UI 用例前安装 Selenium 等
+│   ├── 释放8001端口.bat           # 释放占用 8001 的进程
+│   ├── 清除浏览器驱动缓存.bat     # 清除 Web 驱动缓存
+│   ├── .edge_driver_path         # 可选，Edge 驱动绝对路径（一行）；默认优先使用 Edge
+│   └── .chrome_driver_path       # 可选，Chrome 驱动绝对路径（一行）
 ├── frontend/                     # 前端（默认端口 3000）
 │   ├── src/
-│   │   ├── api/                  # API 封装（baseURL /api）
-│   │   ├── components/           # 布局、通知、ErrorBoundary 等
-│   │   ├── pages/                # 各功能页、使用与部署
-│   │   └── contexts/             # 认证等
-│   ├── vite.config.ts            # 代理 /api、/ws 到 8001
+│   │   ├── api/                  # 请求封装（baseURL 为 /api）
+│   │   ├── components/           # 布局、面包屑、ErrorBoundary 等
+│   │   ├── pages/                # 页面（Dashboard, TestCases, CaseEditor, Executions, Reports, Defects, Logs, Environments, Projects, Guide, UserManagement, AIChat, Messaging, Settings, Login 等）
+│   │   └── contexts/             # AuthContext, ProjectContext
+│   ├── vite.config.ts            # 开发时代理 /api、/ws 到 8001
 │   └── package.json
-├── .github/workflows/ci.yml      # CI 流水线（lint + build + 依赖审计）
-├── Dockerfile                    # 多阶段构建（前端 + 后端）
+├── .github/workflows/ci.yml      # CI：后端 lint/测试、前端构建、依赖审计；可选部署
+├── Dockerfile                    # 多阶段构建
 ├── docker-compose.yml            # Docker 一键部署
-├── docker/nginx.conf             # Nginx 反代配置模板
-├── 一键启动.bat                   # 同时启动后端 + 前端（Windows）
+├── docker/                       # Nginx 等配置
+├── 一键启动.bat                   # Windows：先后启动后端与前端
 └── README.md
 ```
+
+说明：若仓库提供 `backend/seed.py`，可用于导入示例数据；未提供则无该文件，以实际为准。
 
 ---
 
 ## 后端脚本说明
 
-项目仅保留以下主要脚本，其余操作请用命令行完成。
+以下为项目内与运行、维护相关的主要脚本与配置；其余操作请使用命令行。
 
 | 文件 | 作用 |
 |------|------|
-| **一键启动.bat**（根目录） | 同时启动后端 + 前端，推荐日常使用 |
-| **start_backend.bat**（backend 目录） | 只启动后端，监听 8001（一键启动会调用它） |
-| **安装Web引擎依赖.bat**（backend 目录） | 安装后端依赖（含 Selenium），需运行 Web UI 用例时执行一次 |
-| **释放8001端口.bat**（backend 目录） | 结束占用 8001 端口的进程，端口被占用导致后端无法启动时双击运行 |
-| **清除浏览器驱动缓存.bat**（backend 目录） | 清除 Web 驱动缓存，驱动报错或版本不匹配时双击运行后重启后端 |
-| **seed.py** | 向后端写入示例项目、环境、用例等（需后端已启动）：`python seed.py` |
+| **一键启动.bat**（根目录） | 先后启动后端与前端（Windows），日常推荐使用 |
+| **start_backend.bat**（backend 目录） | 仅启动后端，监听 8001；一键启动会调用它 |
+| **安装Web引擎依赖.bat**（backend 目录） | 安装 Selenium 等依赖，**仅当需要执行 Web UI 用例时**在 backend 目录执行一次 |
+| **释放8001端口.bat**（backend 目录） | 结束占用 8001 的进程，后端因端口占用无法启动时使用 |
+| **清除浏览器驱动缓存.bat**（backend 目录） | 清除 Web 驱动缓存，驱动报错或版本不匹配时执行后重启后端 |
+| **clear_data.py**（backend 目录） | **清除**数据库文件、uploads、allure 与截图目录，并重新初始化空库与默认管理员。**使用前必须先停止后端**，再在 backend 目录执行：`python clear_data.py` |
+| **seed_admin**（模块） | 仅重置管理员密码为 admin / admin123。在 backend 目录执行：`python -m app.scripts.seed_admin` |
+| **.edge_driver_path**（backend 目录） | 可选配置文件，内容为一行：Edge 驱动（msedgedriver）的**完整路径**，见 [浏览器驱动路径配置](#浏览器驱动路径配置chrome_driver_path--edge_driver_path) |
+| **.chrome_driver_path**（backend 目录） | 可选配置文件，内容为一行：Chrome 驱动（chromedriver）的**完整路径**，同上 |
+
+**说明**：若仓库提供 `backend/seed.py`，可用于导入示例数据（需后端已启动时执行）；未提供则无此脚本。
 
 **其他常用操作（命令行）：**
 
-- **释放 8001 端口**：可双击 `backend/释放8001端口.bat`；或手动在 backend 目录执行  
-  `for /f "tokens=5" %a in ('netstat -ano ^| findstr ":8001" ^| findstr "LISTENING"') do taskkill /PID %a /F`  
-  或在 PowerShell：`Get-NetTCPConnection -LocalPort 8001 -ErrorAction SilentlyContinue \| ForEach-Object { Stop-Process -Id $_.OwningProcess -Force }`
-- **清除浏览器驱动缓存**（驱动版本不匹配时）：可双击 `backend/清除浏览器驱动缓存.bat`；或手动删除 `%USERPROFILE%\.wdm` 和 `%USERPROFILE%\.cache\selenium`，然后重启后端。
-- **重置 admin 密码**：在 backend 目录执行 `python -m app.scripts.seed_admin`（会重置为 admin / admin123）。
-- **指定 Edge 驱动路径**：先设置环境变量 `EDGE_DRIVER_PATH` 或在本机新建 `backend\.edge_driver_path` 写入驱动完整路径，再运行 `start_backend.bat`。
+- **释放 8001 端口**：可双击 `backend/释放8001端口.bat`；或在 backend 目录用 PowerShell：`Get-NetTCPConnection -LocalPort 8001 -ErrorAction SilentlyContinue | ForEach-Object { Stop-Process -Id $_.OwningProcess -Force }`
+- **清除浏览器驱动缓存**：可双击 `backend/清除浏览器驱动缓存.bat`；或手动删除 `%USERPROFILE%\.wdm` 与 `%USERPROFILE%\.cache\selenium` 后重启后端。
+- **重置 admin 密码**：在 backend 目录执行 `python -m app.scripts.seed_admin`（将管理员密码重置为 admin / admin123）。
+- **指定 Edge/Chrome 驱动路径**：在 backend 下新建 `.edge_driver_path` 或 `.chrome_driver_path`，文件内只写一行驱动可执行文件的完整路径；或设置环境变量 `EDGE_DRIVER_PATH` / `CHROME_DRIVER_PATH` 后启动后端。
+
+### 浏览器驱动路径配置（.chrome_driver_path / .edge_driver_path）
+
+执行 **Web UI 自动化** 时，后端会启动 Chrome 或 Edge 浏览器。若出现「Unable to obtain driver」、驱动版本不匹配等报错，除运行 `清除浏览器驱动缓存.bat` 外，可通过以下配置文件**手动指定驱动路径**，避免自动下载失败或版本不对：
+
+| 文件（均放在 backend 目录下） | 作用 |
+|------------------------------|------|
+| **`.edge_driver_path`** | 指定 **Microsoft Edge** 的驱动 `msedgedriver.exe` 的完整路径；项目默认优先使用 Edge。 |
+| **`.chrome_driver_path`** | 指定 **Chrome** 的驱动 `chromedriver.exe` 的完整路径；Edge 不可用时也会回退到 Chrome。 |
+
+**配置步骤：**
+
+1. 在 `backend` 目录下新建文件 `.edge_driver_path` 或 `.chrome_driver_path`（若存在 `.edge_driver_path.example` / `.chrome_driver_path.example`，可复制后重命名）。
+2. 打开文件，**只写一行**：对应驱动的完整路径。例如：
+   - `.edge_driver_path` 内容：`D:\drivers\msedgedriver.exe`
+   - `.chrome_driver_path` 内容：`D:\drivers\chromedriver.exe`
+3. 保存后**重启后端**（如重新运行 `start_backend.bat` 或「一键启动」）后生效。
+
+**替代方式**：不建文件也可设置系统或当前会话的环境变量 `EDGE_DRIVER_PATH` 或 `CHROME_DRIVER_PATH` 为驱动完整路径，再启动后端。环境变量优先于文件。
+
+**驱动下载与使用：**
+
+| 浏览器 | 驱动名称 | 官方下载地址 | 使用方式 |
+|--------|----------|--------------|----------|
+| **Chrome** | ChromeDriver | [Chrome for Testing](https://googlechromelabs.github.io/chrome-for-testing/)（Chrome 115+）或 [ChromeDriver 下载页](https://developer.chrome.com/docs/chromedriver/downloads) | 下载与**本机 Chrome 主版本一致**的 chromedriver，解压得到 `chromedriver.exe`（Windows），放到任意目录（如 `D:\drivers`），将该 exe 的**完整路径**写入 `backend/.chrome_driver_path` 或设置环境变量 `CHROME_DRIVER_PATH`。 |
+| **Microsoft Edge** | Microsoft Edge WebDriver | [Edge WebDriver 下载页](https://developer.microsoft.com/microsoft-edge/tools/webdriver/) | 选择与**本机 Edge 主版本一致**的版本（Stable/Beta 等），下载对应平台的 `msedgedriver`，Windows 为 zip 内 `msedgedriver.exe`。解压到任意目录，将该 exe 的**完整路径**写入 `backend/.edge_driver_path` 或设置环境变量 `EDGE_DRIVER_PATH`。 |
+
+- **版本匹配**：驱动大版本必须与已安装的浏览器主版本一致（如 Chrome 120 需用 ChromeDriver 120.x）。可在浏览器地址栏输入 `chrome://version` 或 `edge://version` 查看版本号后再去下载对应驱动。
+- **使用流程**：下载 → 解压到固定目录 → 在 `backend` 下新建 `.edge_driver_path` 或 `.chrome_driver_path`，文件内只写一行 exe 完整路径 → 保存后重启后端。
 
 ---
 
@@ -967,7 +1020,7 @@ A：确认两个启动窗口（后端、前端）都没关。可试试 http://12
 A：一定要用 **http://localhost:3000**（或 127.0.0.1:3000）访问前端，不要直接打开 8001。若仍 404，可在浏览器访问 http://localhost:8001/api/health 看是否有返回；若无，可能是 8001 被旧进程占用，可双击 `backend/释放8001端口.bat` 或按 [后端脚本说明](#后端脚本说明) 用命令行释放端口后再重新启动后端。
 
 **Q：Web 用例报「Unable to obtain driver」或驱动版本不匹配？**  
-A：先关掉后端，再双击 `backend/清除浏览器驱动缓存.bat`（或手动删除 **`%USERPROFILE%\.wdm`** 和 **`%USERPROFILE%\.cache\selenium`**），然后重新启动后端再试。若仍失败，可新建 `backend/.chrome_driver_path` 或 `.edge_driver_path`，内容写 chromedriver/msedgedriver 的完整路径，或设置环境变量 `CHROME_DRIVER_PATH` / `EDGE_DRIVER_PATH`。
+A：先关掉后端，再双击 `backend/清除浏览器驱动缓存.bat`（或手动删除 **`%USERPROFILE%\.wdm`** 和 **`%USERPROFILE%\.cache\selenium`**），然后重新启动后端再试。若仍失败，请按 [浏览器驱动路径配置](#浏览器驱动路径配置chrome_driver_path--edge_driver_path) 在 backend 目录新建 `.chrome_driver_path` 或 `.edge_driver_path`，写入 chromedriver/msedgedriver 的**完整路径**（一行），或设置环境变量 `CHROME_DRIVER_PATH` / `EDGE_DRIVER_PATH` 后重启后端。
 
 **Q：怎么确认后端已经加载了最新代码？**  
 A：浏览器访问 http://localhost:8001/api/health ，若返回里有 `version` 等字段，说明当前后端已正常加载。若无返回，可先双击 `backend/释放8001端口.bat` 或按 [后端脚本说明](#后端脚本说明) 释放端口后再重启后端。
@@ -991,7 +1044,7 @@ A：说明**模型名称**填错了，当前填的模型在该提供商下不存
 
 ## 扩展指南
 
-- **添加新测试类型**：在 `backend/app/models.py` 的 `TestType` 枚举中增加类型；在 `backend/app/services/` 中新增或修改执行器；在 `backend/app/routes/execution.py` 中按类型分发；在 `frontend/src/pages/CaseEditor.tsx` 中增加该类型的配置 UI。
+- **添加新测试类型**：在 `backend/app/models.py` 的 `TestType` 枚举中增加类型（当前为 `API`、`WEB`、`APP`、`MINIAPP`）；在 `backend/app/services/` 中新增或修改执行器；在 `backend/app/routes/execution.py` 中按类型分发；在 `frontend/src/pages/CaseEditor.tsx` 中增加该类型的配置 UI。
 - **切换数据库**：设置环境变量 `DATABASE_URL`（如 `mysql+aiomysql://user:pass@host/db` 或 `postgresql+asyncpg://...`），并安装对应驱动，在 `requirements.txt` 中声明。所有配置项集中在 `backend/app/config.py`。
 - **调整限流阈值**：通过环境变量 `RATE_LIMIT_EXECUTION`、`RATE_LIMIT_AI` 调整每用户每分钟的执行/AI 请求上限；限流逻辑在 `backend/app/rate_limiter.py`。
 - **扩展审计日志**：在需要记录的路由中调用 `from ..audit import log_audit`，参见 `auth.py` 中密码修改/重置的用法。审计记录存储在 `audit_logs` 表。
@@ -1000,7 +1053,7 @@ A：说明**模型名称**填错了，当前填的模型在该提供商下不存
 
 ## CI/CD 流水线
 
-项目在 `.github/workflows/ci.yml` 中提供了完整的 CI/CD 流水线：**检查阶段**每次 push/PR 自动运行，**部署阶段**仅在 push 到 main 且检查通过后执行。
+项目在 `.github/workflows/ci.yml` 中定义了 CI/CD 流程：**检查阶段**在每次 push 或 PR 时自动运行；**部署阶段**为可选，需在 workflow 中取消注释并在 push 到 main 且检查通过后才会执行。
 
 ### 整体流程
 
@@ -1140,8 +1193,10 @@ npm audit --audit-level=high
 | **React Router 6** | 路由 | 负责前端路由与页面跳转。 |
 | **Axios** | HTTP 请求 | 所有与后端 `/api` 的请求均通过 Axios 发起。 |
 | **dayjs** | 日期时间 | 日期展示、筛选与格式化。 |
+| **react-markdown + remark-gfm** | Markdown 渲染 | AI 回复、说明等富文本展示。 |
+| **jspdf** | PDF 生成 | 报告导出等（若功能使用）。 |
 
-开发时通过 Vite 代理将 `/api`、`/ws` 转发到后端（默认 8001），因此必须通过前端地址（如 http://localhost:3000）访问，不能直接访问后端端口做完整功能测试。
+开发时通过 Vite 将 `/api`、`/ws` 代理到后端（默认 8001），**必须通过前端地址 http://localhost:3000 访问**，不能仅访问后端端口做完整功能测试。
 
 ### 后端
 
@@ -1174,9 +1229,9 @@ npm audit --audit-level=high
 | **接口测试** | httpx | 后端根据用例配置（方法、URL、头、体、断言）使用 httpx 发请求并校验状态码、JSON 路径、响应内容等。 |
 | **Web UI 测试** | Selenium 4 + webdriver-manager | 使用 Selenium 驱动 Chrome 或 **Edge**（默认 Edge）；webdriver-manager 负责自动匹配与下载浏览器驱动。 |
 | **App 测试** | Appium-Python-Client | 调用本机已启动的 Appium Server，与真机或模拟器通信执行步骤。 |
-| **小程序测试** | 项目内执行器 | 使用项目自研的小程序自动化逻辑，依赖对应运行时环境。 |
+| **小程序测试** | 项目内 miniapp_executor | 依赖项目内实现与对应小程序运行时环境，具体能力以代码为准。 |
 
-上述执行均在平台内由后端完成，与用例管理、执行记录、报告、缺陷等模块一体；不依赖 pytest 或外部测试框架。
+上述执行均在平台内由后端完成，与用例管理、执行记录、报告、缺陷等模块一体；**不依赖 pytest 或其它外部测试框架**。
 
 ---
 

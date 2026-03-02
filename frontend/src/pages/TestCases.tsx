@@ -175,10 +175,11 @@ const TestCases: React.FC = () => {
     loadProjects();
   }, []);
 
+  // 无项目数据时清空项目选择，避免下拉框显示无效的默认值（如 1）
   useEffect(() => {
-    if (projects.length === 0) return;
     const pid = filters.project_id;
-    if (pid != null && !projects.some((p: any) => p.id === pid)) {
+    if (pid == null) return;
+    if (projects.length === 0 || !projects.some((p: any) => p.id === pid)) {
       setFilters((prev: any) => ({ ...prev, project_id: undefined }));
       try {
         sessionStorage.removeItem(CASES_PAGE_PROJECT_KEY);
@@ -601,7 +602,7 @@ const TestCases: React.FC = () => {
           <Col xs={24} sm={12} md={5}>
             <Select
               placeholder="请选择项目（必选）"
-              value={filters.project_id}
+              value={projects.length > 0 && projects.some((p: any) => p.id === filters.project_id) ? filters.project_id : undefined}
               onChange={(v) => setFilters({ ...filters, project_id: v })}
               style={{ width: '100%' }}
               allowClear
