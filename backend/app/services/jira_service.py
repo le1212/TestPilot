@@ -1,5 +1,4 @@
 # Jira REST API 集成：推送缺陷、同步状态、测试连接
-import json
 import base64
 from typing import Any
 import httpx
@@ -25,7 +24,7 @@ STATUS_MAP = {
 
 
 def _auth_headers(config: dict) -> dict:
-    url = (config.get("jira_url") or "").rstrip("/")
+    (config.get("jira_url") or "").rstrip("/")
     username = config.get("jira_username") or ""
     api_token = config.get("jira_api_token") or ""
     token = base64.b64encode(f"{username}:{api_token}".encode()).decode()

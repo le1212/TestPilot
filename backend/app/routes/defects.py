@@ -1,5 +1,5 @@
 import json
-from fastapi import APIRouter, Depends, HTTPException, Query, Request, Body
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
 from typing import Optional
@@ -8,7 +8,7 @@ from ..db_utils import escape_like
 from ..date_utils import parse_date_to_utc_range
 from ..models import Defect, DefectStatus, DefectSeverity, TestCase, Project, SystemConfig, User, DefectComment, DefectLog
 from ..schemas import DefectCreate, DefectUpdate, DefectOut, DefectBatchUpdate, DefectCommentCreate, DefectCommentOut, DefectLogOut
-from ..user_utils import get_user_display_names, get_user_display_with_account
+from ..user_utils import get_user_display_with_account
 from .auth import get_current_user
 from .notifications import get_assignee_user_id
 from ..services.jira_service import push_defect_to_jira as jira_push, sync_defect_status as jira_sync

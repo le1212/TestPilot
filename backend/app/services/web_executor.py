@@ -4,7 +4,6 @@ Web 类型用例执行引擎：使用 Selenium 驱动浏览器执行步骤。
 定位器支持：css=、xpath=、id=、name=（元素 name 属性），不写前缀时按 CSS 选择器处理。
 """
 import time
-from typing import Any
 
 # 可选浏览器：edge（默认）、chrome
 DEFAULT_BROWSER = "edge"
@@ -71,7 +70,6 @@ def execute_web(
 
     try:
         from selenium import webdriver
-        from selenium.webdriver.common.by import By
         from selenium.webdriver.support.ui import WebDriverWait, Select
         from selenium.webdriver.support import expected_conditions as EC
         from selenium.webdriver.common.action_chains import ActionChains
@@ -159,7 +157,7 @@ def execute_web(
                         co.page_load_strategy = "eager"
                         driver = webdriver.Chrome(options=co)
                         logs.append("[浏览器] 已回退为 Chrome（Edge 驱动不可用）")
-                    except Exception as e2:
+                    except Exception:
                         raise e1
                 elif "version" in err_msg or "session not created" in err_msg:
                     cleared = _clear_driver_caches()
@@ -222,7 +220,7 @@ def execute_web(
                         path = ChromeDriverManager().install()
                         driver = webdriver.Chrome(service=ChromeService(executable_path=path), options=options)
                         logs.append("[驱动] 已通过 webdriver-manager 安装并启用 ChromeDriver")
-                    except Exception as e2:
+                    except Exception:
                         raise RuntimeError(
                             "Chrome 驱动获取失败。请任选其一：1) 在 backend 目录新建 .chrome_driver_path 文件，内容写 chromedriver.exe 的完整路径；"
                             " 2) 设置环境变量 CHROME_DRIVER_PATH 指向 chromedriver；"
@@ -247,16 +245,26 @@ def execute_web(
             _allowed = {"open", "sleep", "click", "input", "clear", "select", "wait", "assert_text", "assert_visible", "assert_title", "screenshot", "scroll", "hover", "switch_frame", "execute_js"}
             if action not in _allowed:
                 # 简单语义回退，与 ai_service 一致
-                if "assert" in action or "check" in action: action = "assert_visible"
-                elif action in ("input", "type", "fill"): action = "input"
-                elif action in ("click", "submit", "tap"): action = "click"
-                elif "scroll" in action: action = "scroll"
-                elif action in ("screenshot", "capture"): action = "screenshot"
-                elif action in ("hover", "mouse_over"): action = "hover"
-                elif action in ("select", "dropdown"): action = "select"
-                elif "clear" in action: action = "clear"
-                elif action in ("execute_js", "script"): action = "execute_js"
-                else: action = "wait"
+                if "assert" in action or "check" in action:
+                    action = "assert_visible"
+                elif action in ("input", "type", "fill"):
+                    action = "input"
+                elif action in ("click", "submit", "tap"):
+                    action = "click"
+                elif "scroll" in action:
+                    action = "scroll"
+                elif action in ("screenshot", "capture"):
+                    action = "screenshot"
+                elif action in ("hover", "mouse_over"):
+                    action = "hover"
+                elif action in ("select", "dropdown"):
+                    action = "select"
+                elif "clear" in action:
+                    action = "clear"
+                elif action in ("execute_js", "script"):
+                    action = "execute_js"
+                else:
+                    action = "wait"
             locator_str = _replace_vars((step.get("locator") or "").strip())
             value = _replace_vars((step.get("value") or "").strip())
             desc = (step.get("description") or "").strip() or f"步骤{i+1}"

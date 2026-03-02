@@ -71,7 +71,7 @@ async def list_user_options(
     _user: User = Depends(get_current_user),
 ):
     """供下拉选择使用：返回 { id, username, real_name }，任意登录用户可调，显示名用 real_name 或 username"""
-    result = await db.execute(select(User).where(User.disabled == False).order_by(User.id))
+    result = await db.execute(select(User).where(not User.disabled).order_by(User.id))
     return [{"id": u.id, "username": u.username, "real_name": getattr(u, "real_name", None) or ""} for u in result.scalars().all()]
 
 
@@ -115,7 +115,7 @@ async def get_user_profile(
     _user: User = Depends(get_current_user),
 ):
     """任意登录用户可查看他人基础资料（用于聊天中点击头像）"""
-    r = await db.execute(select(User).where(User.id == user_id, User.disabled == False))
+    r = await db.execute(select(User).where(User.id == user_id, not User.disabled))
     u = r.scalar_one_or_none()
     if not u:
         raise HTTPException(status_code=404, detail="用户不存在")

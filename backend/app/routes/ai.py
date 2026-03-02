@@ -6,12 +6,10 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional
 
-from ..database import get_db
-from ..models import TestExecution, TestCase, TestReport
-from ..rate_limiter import RateLimiter
 from ..config import RATE_LIMIT_AI
-
-_ai_limiter = RateLimiter(RATE_LIMIT_AI)
+from ..database import get_db
+from ..models import TestExecution, TestCase, TestReport, User
+from ..rate_limiter import RateLimiter
 from ..services.ai_service import (
     get_ai_config,
     analyze_log,
@@ -21,7 +19,8 @@ from ..services.ai_service import (
     generate_steps,
 )
 from .auth import get_current_user
-from ..models import User
+
+_ai_limiter = RateLimiter(RATE_LIMIT_AI)
 
 router = APIRouter(prefix="/api/ai", tags=["ai"])
 

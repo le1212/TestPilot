@@ -1,7 +1,7 @@
 """
 站内通知：列表、未读数、已读、即时推送（WebSocket 广播）、同步到即时通讯消息通知。
 """
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -53,11 +53,11 @@ async def get_notification_target_user_ids(
     if defect and getattr(defect, "assignee", None):
         username = _assignee_to_username(defect.assignee)
         if username:
-            r = await db.execute(select(User.id).where(User.username == username, User.disabled == False))
+            r = await db.execute(select(User.id).where(User.username == username, not User.disabled))
             row = r.one_or_none()
             if row:
                 ids.add(row[0])
-    r = await db.execute(select(User.id).where(User.is_admin == True))
+    r = await db.execute(select(User.id).where(User.is_admin))
     for (uid,) in r.all():
         ids.add(uid)
     return list(ids)
@@ -70,7 +70,7 @@ async def get_assignee_user_id(db: AsyncSession, defect) -> int | None:
     username = _assignee_to_username(defect.assignee)
     if not username:
         return None
-    r = await db.execute(select(User.id).where(User.username == username, User.disabled == False))
+    r = await db.execute(select(User.id).where(User.username == username, not User.disabled))
     row = r.one_or_none()
     return row[0] if row else None
 
@@ -93,7 +93,7 @@ async def create_and_broadcast(
         if (type or "").lower() in ("announcement", "公告"):
             n = Notification(title=title, content=content, type=type or "system", extra=extra or {}, user_id=None)
             db.add(n)
-            r = await db.execute(select(User.id).where(User.disabled == False))
+            r = await db.execute(select(User.id).where(not User.disabled))
             all_user_ids = [row[0] for row in r.all()]
             im_items = await add_notification_to_im(db, app, all_user_ids, title, content, type_=type or "system", extra=extra)
             await db.commit()
@@ -121,7 +121,7 @@ async def create_and_broadcast(
             return created[0] if created else None
         n = Notification(title=title, content=content, type=type or "system", extra=extra or {})
         db.add(n)
-        r = await db.execute(select(User.id).where(User.disabled == False))
+        r = await db.execute(select(User.id).where(not User.disabled))
         all_user_ids = [row[0] for row in r.all()]
         im_items = await add_notification_to_im(db, app, all_user_ids, title, content, type_=type or "system", extra=extra)
         await db.commit()

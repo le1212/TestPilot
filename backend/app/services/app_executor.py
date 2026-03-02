@@ -3,7 +3,6 @@ App 类型用例执行引擎：使用 Appium 驱动移动设备执行步骤。
 用例 config 格式: { "platform": "android"|"ios", "steps": [ { "action", "locator", "value", "description" } ], "appium_server_url", "capabilities" }
 """
 import time
-from typing import Any
 
 
 def execute_app(

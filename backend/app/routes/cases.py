@@ -8,7 +8,7 @@ import json
 from ..database import get_db
 from ..db_utils import escape_like
 from ..date_utils import parse_date_to_utc_range
-from ..models import TestCase, TestType, User, CaseGroup, TestExecution, Defect, Project
+from ..models import TestCase, User, CaseGroup, TestExecution, Defect, Project
 from ..schemas import TestCaseCreate, TestCaseUpdate, TestCaseOut, TestCaseBatchUpdate
 from ..user_utils import get_user_display_with_account
 from .auth import get_current_user
@@ -146,7 +146,7 @@ def _format_export_columns(config: dict, case_type: str) -> tuple:
         url = (config.get("url") or "").strip()
         steps = f"1. 发送 {method} 请求：{url}" if url else "发送请求"
         params = config.get("params") or {}
-        body_type = config.get("body_type") or "json"
+        config.get("body_type") or "json"
         body = config.get("body") or ""
         input_parts = []
         if isinstance(params, dict) and params:

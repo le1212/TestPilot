@@ -2,7 +2,7 @@
 """AI 答疑：独立对话页面，会话自动保存、可查看历史。"""
 from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel
-from sqlalchemy import select, func as sa_func, delete
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 from typing import Optional

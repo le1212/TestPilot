@@ -8,9 +8,7 @@ if sys.platform == "win32":
 from fastapi import FastAPI, Depends
 from fastapi.responses import RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import text
-from .database import get_db
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
@@ -123,7 +121,7 @@ async def root():
 
 @app.websocket("/ws/notifications")
 async def ws_notifications(websocket):
-    from starlette.websockets import WebSocket, WebSocketDisconnect
+    from starlette.websockets import WebSocketDisconnect
     token = websocket.query_params.get("token")
     user_id: int | None = None
     if token:
@@ -196,7 +194,6 @@ async def health():
     except Exception:
         pass
     try:
-        from .services.web_executor import execute_web
         web_engine = True
     except Exception:
         web_engine = False

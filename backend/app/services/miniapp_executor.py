@@ -4,7 +4,6 @@
 需在本地安装 minium 并在微信开发者工具中打开对应项目、开启服务端口。
 """
 import time
-from typing import Any
 
 
 def execute_miniapp(

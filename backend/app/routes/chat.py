@@ -2,12 +2,12 @@
 """即时通讯：私聊、群聊、消息通知机器人，会话记录自动保存。"""
 from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel
-from sqlalchemy import select, func as sa_func, and_, or_, case as sa_case
+from sqlalchemy import select, func as sa_func, and_, or_
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 from typing import Optional
 
-from ..database import get_db, async_session
+from ..database import get_db
 from ..date_utils import iso_utc
 from ..db_utils import escape_like
 from ..models import (
@@ -876,7 +876,7 @@ async def list_chat_users(
     db: AsyncSession = Depends(get_db),
     user: User = Depends(get_current_user),
 ):
-    q = select(User).where(User.disabled == False, User.id != user.id)
+    q = select(User).where(not User.disabled, User.id != user.id)
     if keyword:
         kw = f"%{escape_like(keyword.strip())}%"
         q = q.where(or_(User.username.ilike(kw, escape="\\"), User.real_name.ilike(kw, escape="\\")))
