@@ -1,0 +1,36 @@
+# Dependencies
+node_modules/
+
+# Build / dist
+frontend/dist/
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+env/
+*.egg-info/
+.eggs/
+
+# Allure (generated reports)
+backend/allure-reports/
+backend/allure-results/
+
+# IDE / OS
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Env / secrets
+.env
+.env.local
+*.local
+
+# Logs
+*.log
+npm-debug.log*

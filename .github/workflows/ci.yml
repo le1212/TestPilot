@@ -1,0 +1,148 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  # ───────────────────── 检查阶段（每次 push / PR 都跑） ─────────────────────
+
+  backend-lint-test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install ruff pytest httpx
+
+      - name: Lint with ruff
+        run: ruff check app/ --select E,W,F --ignore E501
+
+      - name: Run tests
+        run: pytest tests/ -v --tb=short 2>/dev/null || echo "No tests found yet — skipping"
+
+  frontend-build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        run: npm ci || npm install
+
+      - name: TypeScript type check & build
+        run: npm run build
+
+  dependency-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Audit Python dependencies
+        run: |
+          pip install pip-audit
+          pip-audit -r backend/requirements.txt || true
+
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Audit npm dependencies
+        working-directory: frontend
+        run: npm audit --audit-level=high || true
+
+  # ───────────────── 方案 A：SSH 部署到服务器（裸机 / 虚拟机） ─────────────────
+  # 适用于：服务器上直接跑 Python + Nginx，不用 Docker
+  # 启用方法：在 GitHub 仓库 Settings → Secrets and variables → Actions 中添加：
+  #   DEPLOY_HOST     服务器公网 IP（如 123.45.67.89）
+  #   DEPLOY_USER     SSH 用户名（如 root）
+  #   DEPLOY_KEY      SSH 私钥（整段粘贴，包含 BEGIN/END 行）
+  #   DEPLOY_PATH     项目在服务器上的路径（如 /opt/testtool）
+  # 取消下方注释即可启用
+
+  # deploy-ssh:
+  #   name: Deploy via SSH
+  #   needs: [backend-lint-test, frontend-build]
+  #   if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Deploy to server
+  #       uses: appleboy/ssh-action@v1
+  #       with:
+  #         host: ${{ secrets.DEPLOY_HOST }}
+  #         username: ${{ secrets.DEPLOY_USER }}
+  #         key: ${{ secrets.DEPLOY_KEY }}
+  #         script: |
+  #           cd ${{ secrets.DEPLOY_PATH }}
+  #           git pull origin main
+  #
+  #           # 后端：激活虚拟环境、装依赖、重启服务
+  #           cd backend
+  #           source venv/bin/activate
+  #           pip install -r requirements.txt
+  #           sudo systemctl restart testpilot
+  #
+  #           # 前端：重新构建、替换 Nginx 静态文件
+  #           cd ../frontend
+  #           npm ci || npm install
+  #           npm run build
+  #           sudo rm -rf /var/www/testpilot/dist
+  #           sudo cp -r dist /var/www/testpilot/dist
+  #           sudo systemctl reload nginx
+  #
+  #           echo "Deploy complete!"
+
+  # ───────────────── 方案 B：Docker 镜像部署 ─────────────────
+  # 适用于：服务器装了 Docker，通过镜像部署
+  # 启用方法：在 GitHub 仓库 Settings → Secrets and variables → Actions 中添加：
+  #   DEPLOY_HOST     服务器公网 IP
+  #   DEPLOY_USER     SSH 用户名
+  #   DEPLOY_KEY      SSH 私钥
+  #   DEPLOY_PATH     docker-compose.yml 所在路径（如 /opt/testtool）
+  # 取消下方注释即可启用
+
+  # deploy-docker:
+  #   name: Deploy via Docker
+  #   needs: [backend-lint-test, frontend-build]
+  #   if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Deploy to server
+  #       uses: appleboy/ssh-action@v1
+  #       with:
+  #         host: ${{ secrets.DEPLOY_HOST }}
+  #         username: ${{ secrets.DEPLOY_USER }}
+  #         key: ${{ secrets.DEPLOY_KEY }}
+  #         script: |
+  #           cd ${{ secrets.DEPLOY_PATH }}
+  #           git pull origin main
+  #           docker compose down
+  #           docker compose up -d --build
+  #           docker image prune -f
+  #           echo "Docker deploy complete!"

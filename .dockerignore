@@ -1,0 +1,11 @@
+frontend/node_modules
+backend/__pycache__
+backend/.pytest_cache
+backend/testplatform.db
+backend/uploads
+backend/screenshots
+backend/allure-results
+backend/allure-reports
+*.pyc
+.git
+.github
