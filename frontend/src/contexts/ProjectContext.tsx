@@ -53,6 +53,19 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
     refreshProjects();
   }, [refreshProjects]);
 
+  // 无项目数据或当前选中的项目不在列表中时清空 projectId，避免下拉框显示无效默认值（如 1）
+  useEffect(() => {
+    if (projectId == null) return;
+    if (projects.length === 0 || !projects.some((p) => p.id === projectId)) {
+      setProjectIdState(null);
+      try {
+        localStorage.removeItem(PROJECT_CONTEXT_KEY);
+      } catch {
+        // ignore
+      }
+    }
+  }, [projects, projectId]);
+
   const value: ProjectContextValue = {
     projectId,
     setProjectId,
@@ -67,7 +80,8 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
-export function useProjectContext() {
+export function useProjectContext(): ProjectContextValue {
   const ctx = useContext(ProjectContext);
+  if (!ctx) throw new Error('useProjectContext must be used within ProjectProvider');
   return ctx;
 }

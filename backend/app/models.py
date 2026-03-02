@@ -18,6 +18,7 @@ class User(Base):
     disabled = Column(Boolean, default=False, nullable=False)
     reset_token = Column(String(64), nullable=True)
     reset_token_expires = Column(DateTime(timezone=True), nullable=True)
+    token_version = Column(Integer, default=0, nullable=False)  # 递增可使该用户所有旧 token 失效（如清库重建后）
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 

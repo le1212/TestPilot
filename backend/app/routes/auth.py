@@ -82,9 +82,9 @@ def _clear_login_failed(ip: str) -> None:
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
 
-def _create_token(user_id: int, username: str) -> str:
+def _create_token(user_id: int, username: str, token_version: int = 0) -> str:
     expire = datetime.now(timezone.utc) + timedelta(hours=JWT_EXPIRE_HOURS)
-    payload = {"sub": str(user_id), "username": username, "exp": expire}
+    payload = {"sub": str(user_id), "username": username, "exp": expire, "v": token_version}
     return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
 
 
@@ -121,6 +121,9 @@ async def get_current_user(
     user = result.scalar_one_or_none()
     if not user:
         raise HTTPException(status_code=401, detail="用户不存在")
+    token_ver = getattr(user, "token_version", 0)
+    if payload.get("v", 0) != token_ver:
+        raise HTTPException(status_code=401, detail="登录已失效，请重新登录")
     if user.disabled:
         raise HTTPException(status_code=403, detail="账号已停用")
     return user
@@ -146,7 +149,7 @@ async def login(data: LoginRequest, request: Request, db: AsyncSession = Depends
         _record_login_failed(ip)
         raise HTTPException(status_code=403, detail="账号已停用")
     _clear_login_failed(ip)
-    token = _create_token(user.id, user.username)
+    token = _create_token(user.id, user.username, getattr(user, "token_version", 0))
     logger.info("Login success user=%s id=%d ip=%s", user.username, user.id, ip)
 
     warnings: list[str] = []

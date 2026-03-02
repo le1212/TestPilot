@@ -194,6 +194,7 @@ async def health():
     except Exception:
         pass
     try:
+        import selenium.webdriver  # noqa: F401
         web_engine = True
     except Exception:
         web_engine = False

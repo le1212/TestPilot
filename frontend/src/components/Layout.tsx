@@ -26,7 +26,6 @@ import {
 } from '@ant-design/icons';
 import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { useProjectContext } from '../contexts/ProjectContext';
 import { getNotifications, getUnreadCount, markNotificationRead, markAllNotificationsRead, updateProfile, changePassword, getChatUnreadTotal } from '../api';
 import { formatDateTimeZh } from '../utils/date';
 
@@ -89,7 +88,6 @@ function getMenuItems(isAdmin: boolean, chatUnread: number, aiChatUnread: boolea
 }
 
 const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const projectCtx = useProjectContext();
   const [collapsed, setCollapsed] = useState(false);
   const [narrow, setNarrow] = useState(typeof window !== 'undefined' && window.innerWidth < BREAKPOINT_MD);
   const [unreadCount, setUnreadCount] = useState(0);

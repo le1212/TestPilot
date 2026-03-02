@@ -69,6 +69,7 @@ const Reports: React.FC = () => {
       const params: any = { page: 1, page_size: 50 };
       if (filterDate) params.date = filterDate;
       if (filterKeyword && filterKeyword.trim()) params.keyword = filterKeyword.trim();
+      if (filterProjectId) params.project_id = filterProjectId;
       const [rRes, pRes] = await Promise.all([
         getReports(params),
         getProjects(),
@@ -79,13 +80,14 @@ const Reports: React.FC = () => {
     setLoading(false);
   };
 
-  useEffect(() => { load(); }, [filterDate]);
+  useEffect(() => { load(); }, [filterDate, filterKeyword, filterProjectId]);
 
   useEffect(() => {
     const openId = (location.state as any)?.openReportId;
-    if (!openId) return;
-    navigate(`/reports/${openId}`, { replace: true, state: {} });
-  }, [location.state]);
+    const id = openId != null ? Number(openId) : NaN;
+    if (Number.isNaN(id) || id < 1) return;
+    navigate(`/reports/${id}`, { replace: true, state: {} });
+  }, [location.state, navigate]);
 
   useEffect(() => {
     if (!detailIdFromRoute || Number.isNaN(detailIdFromRoute)) return;
@@ -110,6 +112,7 @@ const Reports: React.FC = () => {
           clearInterval(timer);
         }
       } catch {
+        message.error('获取报告状态失败');
         clearInterval(timer);
       }
     }, 2000);

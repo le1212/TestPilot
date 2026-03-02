@@ -8,6 +8,7 @@ from ..database import get_db
 from ..models import CaseGroup, TestCase, Project, User
 from ..schemas import CaseGroupCreate, CaseGroupUpdate, CaseGroupOut
 from .auth import get_current_user
+from .projects import _can_access_project
 
 router = APIRouter(prefix="/api/groups", tags=["case-groups"])
 
@@ -54,6 +55,8 @@ async def create_group(data: CaseGroupCreate, db: AsyncSession = Depends(get_db)
     project = result.scalar_one_or_none()
     if not project:
         raise HTTPException(404, "项目不存在")
+    if not _can_access_project(user, project):
+        raise HTTPException(403, "无权限在该项目下创建分组")
     group = CaseGroup(project_id=data.project_id, name=(data.name or "").strip() or "未命名分组", created_by_id=user.id)
     db.add(group)
     await db.commit()

@@ -18,7 +18,6 @@ import ShareToIM from '../components/ShareToIM';
 import Breadcrumb from '../components/Breadcrumb';
 
 const { TextArea } = Input;
-const { TabPane } = Tabs;
 
 const httpMethods = ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'HEAD', 'OPTIONS'];
 const methodColors: Record<string, string> = {
@@ -68,8 +67,16 @@ const CaseEditor: React.FC = () => {
     : Boolean(user.is_admin || (caseData.created_by_id != null && caseData.created_by_id === user.id)
       || (Array.isArray(caseData.collaborator_ids) && caseData.collaborator_ids.includes(user.id)));
   const formStatus = Form.useWatch('status', form);
+  const formProjectId = Form.useWatch('project_id', form);
   const canRun = canEdit && formStatus === 'active';
   const readOnly: boolean = Boolean(isEdit && !canEdit);
+
+  // 切换项目时若当前执行环境不属于新项目，则清空执行环境选择，避免下拉显示无效 id
+  useEffect(() => {
+    if (formProjectId == null || runEnvId == null) return;
+    const env = envs.find((e: any) => e.id === runEnvId);
+    if (env && env.project_id !== formProjectId) setRunEnvId(undefined);
+  }, [formProjectId, runEnvId, envs]);
 
   // API config state
   const [method, setMethod] = useState('GET');
@@ -112,8 +119,9 @@ const CaseEditor: React.FC = () => {
     Promise.all([getProjects(), getEnvironments()]).then(([p, e]) => {
       setProjects(p.data);
       setEnvs(e.data);
+      const projectsList = Array.isArray(p?.data) ? p.data : [];
       const stateProjectId = (location.state as any)?.project_id;
-      if (!isEdit && stateProjectId != null) {
+      if (!isEdit && stateProjectId != null && projectsList.some((proj: any) => proj.id === stateProjectId)) {
         form.setFieldsValue({ project_id: stateProjectId });
       }
     });
@@ -127,8 +135,14 @@ const CaseEditor: React.FC = () => {
           setCaseData(c);
           setCollaboratorIds(Array.isArray(c.collaborator_ids) ? c.collaborator_ids : []);
           setRunEnvId(c.default_environment_id != null ? c.default_environment_id : undefined);
+          // 仅当 project_id 在项目列表中时才回填，避免无数据时下拉显示无效 id（如 1）
+          return Promise.all([getProjects(), Promise.resolve(c)]);
+        })
+        .then(([pRes, c]: [any, any]) => {
+          const projectsList = Array.isArray(pRes?.data) ? pRes.data : [];
+          const validProjectId = projectsList.some((proj: any) => proj.id === c.project_id) ? c.project_id : undefined;
           form.setFieldsValue({
-            project_id: c.project_id,
+            project_id: validProjectId,
             name: c.name,
             type: c.type,
             priority: c.priority,
@@ -1251,13 +1265,17 @@ const CaseEditor: React.FC = () => {
               <Select
                 placeholder="执行环境（可选）"
                 allowClear
-                value={runEnvId}
+                value={(() => {
+                  const pid = formProjectId ?? caseData?.project_id;
+                  const allowed = envs.filter((e: any) => !pid || e.project_id === pid);
+                  return allowed.some((e: any) => e.id === runEnvId) ? runEnvId : undefined;
+                })()}
                 onChange={setRunEnvId}
                 style={{ width: 180 }}
                 disabled={!canRun}
                 options={envs
-                  .filter((e) => !form.getFieldValue('project_id') || e.project_id === form.getFieldValue('project_id'))
-                  .map((e) => ({ label: e.name, value: e.id }))}
+                  .filter((e: any) => !formProjectId || e.project_id === formProjectId)
+                  .map((e: any) => ({ label: e.name, value: e.id }))}
               />
               <Tooltip title={!canEdit ? '仅创建人、管理员或协作者可执行' : formStatus !== 'active' ? '状态非启用，不可执行' : undefined}>
                 <span>

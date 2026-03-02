@@ -64,6 +64,11 @@ const ResetPassword: React.FC = () => {
             <p style={{ color: '#059669' }}>密码已重置。</p>
             <Link to="/login"><Button type="primary">去登录</Button></Link>
           </div>
+        ) : !token ? (
+          <div style={{ textAlign: 'center', padding: '24px 0', color: '#64748b' }}>
+            <p>缺少或无效的重置链接，请从邮件中的链接进入本页。</p>
+            <Link to="/login"><Button type="primary">返回登录</Button></Link>
+          </div>
         ) : (
           <Form name="reset" onFinish={onFinish} autoComplete="off" size="large">
             <Form.Item
@@ -76,7 +81,7 @@ const ResetPassword: React.FC = () => {
             >
               <Input.Password prefix={<LockOutlined />} placeholder="新密码" autoComplete="new-password" />
             </Form.Item>
-            <Form.Item name="confirm" dependencies={['new_password']} rules={[{ required: true }, ({ getFieldValue }) => ({ validator(_, v) { if (!v || getFieldValue('new_password') === v) return Promise.resolve(); return Promise.reject(new Error('两次输入不一致')); } })]}>
+            <Form.Item name="confirm" dependencies={['new_password']} rules={[{ required: true, message: '请确认新密码' }, ({ getFieldValue }) => ({ validator(_, v) { if (!v || getFieldValue('new_password') === v) return Promise.resolve(); return Promise.reject(new Error('两次输入不一致')); } })]}>
               <Input.Password prefix={<LockOutlined />} placeholder="确认新密码" autoComplete="new-password" />
             </Form.Item>
             <Form.Item>

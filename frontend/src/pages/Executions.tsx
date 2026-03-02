@@ -119,7 +119,9 @@ const Executions: React.FC = () => {
       const body = res.data as { data?: any[]; total?: number };
       setExecutions(Array.isArray(body?.data) ? body.data : (body as any) || []);
       setTotal(typeof body?.total === 'number' ? body.total : (body as any)?.length ?? 0);
-    } catch {}
+    } catch {
+      message.error('加载执行记录失败');
+    }
     setLoading(false);
   };
 
@@ -137,17 +139,19 @@ const Executions: React.FC = () => {
     getEnvironments({ project_id: filterProjectId }).then((r) => setEnvironments(Array.isArray(r?.data) ? r.data : [])).catch(() => {});
   }, [filterProjectId]);
   useEffect(() => {
+    setPage(1);
     load(1, pageSize);
-  }, [filterDate, sortBy]);
+  }, [filterDate, sortBy, filterProjectId, filterStatus, filterKeyword, pageSize]);
 
   useEffect(() => {
     const openId = (location.state as any)?.openExecutionId;
-    if (!openId) return;
-    getExecution(openId)
+    const id = openId != null ? Number(openId) : NaN;
+    if (Number.isNaN(id) || id < 1) return;
+    getExecution(id)
       .then((res) => { setDetail(res.data); })
       .catch(() => { message.error('执行记录不存在或已删除'); })
       .finally(() => { navigate(location.pathname, { replace: true, state: {} }); });
-  }, [location.state]);
+  }, [location.state, navigate]);
 
   const runAnalyzeExecution = async () => {
     if (!detail?.id) return;

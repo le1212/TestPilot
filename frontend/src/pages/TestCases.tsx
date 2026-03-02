@@ -191,10 +191,11 @@ const TestCases: React.FC = () => {
 
   useEffect(() => {
     const s = location.state as any;
-    if (s?.openProjectId != null) {
-      setFilters((prev: any) => ({ ...prev, project_id: s.openProjectId }));
+    const openPid = s?.openProjectId != null ? Number(s.openProjectId) : NaN;
+    if (!Number.isNaN(openPid) && openPid >= 1) {
+      setFilters((prev: any) => ({ ...prev, project_id: openPid }));
       try {
-        sessionStorage.setItem(CASES_PAGE_PROJECT_KEY, String(s.openProjectId));
+        sessionStorage.setItem(CASES_PAGE_PROJECT_KEY, String(openPid));
       } catch {
         // ignore
       }
@@ -206,14 +207,16 @@ const TestCases: React.FC = () => {
     if (s?.openProjectId != null || s?.expandGroupId != null) {
       navigate(location.pathname, { replace: true, state: {} });
     }
-  }, [location.state]);
+  }, [location.state, navigate]);
 
+  // 仅当 context 的 projectId 在项目列表中时才同步到 filters，避免无数据时与清空逻辑形成循环导致闪烁
   useEffect(() => {
-    const pid = filters.project_id ?? projectCtx?.projectId;
-    if (pid != null && filters.project_id == null) {
-      setFilters((prev: any) => ({ ...prev, project_id: pid }));
+    const ctxPid = projectCtx?.projectId ?? null;
+    if (ctxPid == null || filters.project_id != null) return;
+    if (projects.length > 0 && projects.some((p: any) => p.id === ctxPid)) {
+      setFilters((prev: any) => ({ ...prev, project_id: ctxPid }));
     }
-  }, [projectCtx?.projectId]);
+  }, [projectCtx?.projectId, projects, filters.project_id]);
 
   useEffect(() => {
     const pid = filters.project_id;
@@ -571,9 +574,7 @@ const TestCases: React.FC = () => {
             )
           ) : null}
           {canEdit(record) ? (
-            <Popconfirm title="确定编辑该用例吗？" okText="确定" cancelText="取消" onConfirm={() => navigate(`/cases/${record.id}`, { state: { expandGroupId: record.group_id != null ? record.group_id : 'ungrouped' } })}>
-              <Button type="link" size="small" icon={<EditOutlined />}>编辑</Button>
-            </Popconfirm>
+            <Button type="link" size="small" icon={<EditOutlined />} onClick={() => navigate(`/cases/${record.id}`, { state: { expandGroupId: record.group_id != null ? record.group_id : 'ungrouped' } })}>编辑</Button>
           ) : (
             <Button type="link" size="small" icon={<EyeOutlined />} onClick={() => navigate(`/cases/${record.id}`, { state: { expandGroupId: record.group_id != null ? record.group_id : 'ungrouped' } })}>查看</Button>
           )}

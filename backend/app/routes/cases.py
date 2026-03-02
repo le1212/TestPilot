@@ -12,6 +12,7 @@ from ..models import TestCase, User, CaseGroup, TestExecution, Defect, Project
 from ..schemas import TestCaseCreate, TestCaseUpdate, TestCaseOut, TestCaseBatchUpdate
 from ..user_utils import get_user_display_with_account
 from .auth import get_current_user
+from .projects import _can_access_project
 from openpyxl import Workbook
 from openpyxl.styles import Font, Alignment
 from openpyxl.utils import get_column_letter
@@ -62,7 +63,15 @@ async def list_cases(
     page: int = Query(1, ge=1),
     page_size: int = Query(50, ge=1, le=200),
     db: AsyncSession = Depends(get_db),
+    user: User = Depends(get_current_user),
 ):
+    if project_id:
+        proj_result = await db.execute(select(Project).where(Project.id == project_id))
+        project = proj_result.scalar_one_or_none()
+        if not project:
+            raise HTTPException(404, "项目不存在")
+        if not _can_access_project(user, project):
+            raise HTTPException(403, "无权限查看该项目下的用例")
     stmt = select(TestCase)
     if project_id:
         stmt = stmt.where(TestCase.project_id == project_id)

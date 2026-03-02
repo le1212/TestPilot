@@ -73,7 +73,6 @@ const Defects: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<any>(null);
-  const [detailOpen, setDetailOpen] = useState(false);
   const [detail, setDetail] = useState<any>(null);
   const [detailEditMode, setDetailEditMode] = useState(false);
   const [detailLoading, setDetailLoading] = useState(false);
@@ -124,13 +123,25 @@ const Defects: React.FC = () => {
     setLoading(false);
   };
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => { load(); }, [filters.project_id, filters.status, filters.severity, filters.keyword, filters.assignee, filters.date]);
+
+  // 无项目数据或当前选中的项目不在列表中时清空 project_id，避免下拉框显示无效默认值（如 1）
   useEffect(() => {
-    const pid = filters.project_id ?? projectCtx?.projectId;
-    if (pid != null && filters.project_id == null) {
-      setFilters((prev: any) => ({ ...prev, project_id: pid }));
+    const pid = filters.project_id;
+    if (pid == null) return;
+    if (projects.length === 0 || !projects.some((p: any) => p.id === pid)) {
+      setFilters((prev: any) => ({ ...prev, project_id: undefined }));
     }
-  }, [projectCtx?.projectId]);
+  }, [projects, filters.project_id]);
+
+  // 仅当 context 的 projectId 在项目列表中时才同步到 filters，避免无数据时与清空逻辑形成循环导致闪烁
+  useEffect(() => {
+    const ctxPid = projectCtx?.projectId ?? null;
+    if (ctxPid == null || filters.project_id != null) return;
+    if (projects.length > 0 && projects.some((p: any) => p.id === ctxPid)) {
+      setFilters((prev: any) => ({ ...prev, project_id: ctxPid }));
+    }
+  }, [projectCtx?.projectId, projects, filters.project_id]);
   useEffect(() => {
     if (filters.project_id != null) {
       projectCtx?.setProjectId(filters.project_id);
@@ -142,9 +153,10 @@ const Defects: React.FC = () => {
 
   useEffect(() => {
     const openId = (location.state as any)?.openDefectId;
-    if (!openId) return;
-    navigate(`/defects/${openId}`, { replace: true, state: {} });
-  }, [location.state]);
+    const id = openId != null ? Number(openId) : NaN;
+    if (Number.isNaN(id) || id < 1) return;
+    navigate(`/defects/${id}`, { replace: true, state: {} });
+  }, [location.state, navigate]);
 
   const defectIdFromUrl = searchParams.get('defect_id');
   useEffect(() => {
@@ -154,6 +166,20 @@ const Defects: React.FC = () => {
     setSearchParams({});
     navigate(`/defects/${id}`, { replace: true });
   }, [defectIdFromUrl]);
+
+  const loadDetailExtra = useCallback((defectId: number) => {
+    setDetailComments([]);
+    setDetailLogs([]);
+    setDetailCommentsLoading(true);
+    setDetailLogsLoading(true);
+    Promise.all([getDefectComments(defectId), getDefectLogs(defectId)])
+      .then(([cRes, lRes]) => {
+        setDetailComments(Array.isArray(cRes?.data) ? cRes.data : []);
+        setDetailLogs(Array.isArray(lRes?.data) ? lRes.data : []);
+      })
+      .catch(() => { message.error('加载讨论与日志失败'); })
+      .finally(() => { setDetailCommentsLoading(false); setDetailLogsLoading(false); });
+  }, []);
 
   useEffect(() => {
     if (!detailIdFromRoute || Number.isNaN(detailIdFromRoute)) return;
@@ -167,7 +193,7 @@ const Defects: React.FC = () => {
       })
       .catch(() => { message.error('缺陷不存在或已删除'); navigate('/defects'); })
       .finally(() => setDetailLoading(false));
-  }, [detailIdFromRoute]);
+  }, [detailIdFromRoute, loadDetailExtra, navigate]);
 
   const [shareOpen, setShareOpen] = useState(false);
   const [shareTarget, setShareTarget] = useState<{ id: number; title: string } | null>(null);
@@ -289,20 +315,6 @@ const Defects: React.FC = () => {
     return !!(r.assignee && r.assignee === assigneeDisplay);
   };
 
-  const loadDetailExtra = (defectId: number) => {
-    setDetailComments([]);
-    setDetailLogs([]);
-    setDetailCommentsLoading(true);
-    setDetailLogsLoading(true);
-    Promise.all([getDefectComments(defectId), getDefectLogs(defectId)])
-      .then(([cRes, lRes]) => {
-        setDetailComments(Array.isArray(cRes?.data) ? cRes.data : []);
-        setDetailLogs(Array.isArray(lRes?.data) ? lRes.data : []);
-      })
-      .catch(() => { message.error('加载讨论与日志失败'); })
-      .finally(() => { setDetailCommentsLoading(false); setDetailLogsLoading(false); });
-  };
-
   const handleAddComment = () => {
     if (!detail?.id) return;
     commentForm.validateFields().then((values) => {
@@ -354,7 +366,7 @@ const Defects: React.FC = () => {
       width: columnWidths.title,
       ellipsis: true,
       render: (t: string, r: any) => (
-        <Typography.Link onClick={() => { setDetail(r); setDetailOpen(true); loadDetailExtra(r.id); }}>{t}</Typography.Link>
+        <Typography.Link onClick={() => navigate(`/defects/${r.id}`)}>{t}</Typography.Link>
       ),
     },
     {
@@ -818,7 +830,8 @@ const Defects: React.FC = () => {
           </Col>
           <Col xs={24} sm={12} md={8} lg={6}>
             <Select placeholder="项目" allowClear style={{ width: '100%' }}
-              value={filters.project_id} onChange={(v) => setFilters({ ...filters, project_id: v })}
+              value={projects.length > 0 && projects.some((p: any) => p.id === filters.project_id) ? filters.project_id : undefined}
+              onChange={(v) => setFilters({ ...filters, project_id: v })}
               options={projects.map((p) => ({ label: p.name, value: p.id }))} />
           </Col>
           <Col xs={24} sm={12} md={8} lg={6}>

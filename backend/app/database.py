@@ -56,6 +56,7 @@ _COMPAT_MIGRATIONS: list[str] = [
     "ALTER TABLE chat_room_members ADD COLUMN last_read_message_id INTEGER DEFAULT 0",
     "ALTER TABLE defects ADD COLUMN priority VARCHAR(20) DEFAULT 'medium'",
     "ALTER TABLE chat_messages ADD COLUMN reply_to_id INTEGER",
+    "ALTER TABLE users ADD COLUMN token_version INTEGER DEFAULT 0",
 ]
 
 
@@ -84,6 +85,7 @@ async def init_db():
                     password_hash=hash_password("admin123"),
                     is_admin=True,
                     disabled=False,
+                    token_version=1,
                 )
                 session.add(admin)
                 await session.commit()
